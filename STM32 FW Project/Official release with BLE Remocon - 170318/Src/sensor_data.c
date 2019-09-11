@@ -25,7 +25,7 @@
  *   (4)   Drone FWD direction < (ACC Y)
  *  
  * Translation of coordinates for AHRS 
- *  (1) Drone FWD direction > (ACC -X)
+ *  (1) Drone FWD direction V (ACC -X)
  *          
  *           (x)<--O(z)
  *                 |
@@ -57,6 +57,9 @@
 #include "steval_fcu001_v1_magneto.h"  
 #include "steval_fcu001_v1_pressure.h"  
 
+// Choose vertical direction of FCU, in sensor_data.c
+// Upside down by rotation around FWD axis, if defined
+//#define FCU_UPSIDE_DOWN
 
 /*
  * This function read sensor data and prepare data for proper coordinate system
@@ -74,20 +77,38 @@ void ReadSensorRawData(void *ACC_handle, void *GYR_handle, void *MAG_handle, voi
     /* Data Type int32_t */
     // Read data is in mg unit
     BSP_ACCELERO_Get_Axes(ACC_handle, &acc_temp_int16);
+#ifdef FCU_UPSIDE_DOWN
+    acc_temp.AXIS_X =  (int32_t) acc_temp_int16.AXIS_X;               /* Casting data to int32_t */
+    acc_temp.AXIS_Y = -(int32_t) acc_temp_int16.AXIS_Y;
+    acc_temp.AXIS_Z = -(int32_t) acc_temp_int16.AXIS_Z;
+#else
     acc_temp.AXIS_X = (int32_t) acc_temp_int16.AXIS_X;                /* Casting data to int32_t */
     acc_temp.AXIS_Y = (int32_t) acc_temp_int16.AXIS_Y;
     acc_temp.AXIS_Z = (int32_t) acc_temp_int16.AXIS_Z;
+#endif
     // Read data is in mdps unit
     BSP_GYRO_Get_Axes(GYR_handle, &gyro_temp_int16);
+#ifdef FCU_UPSIDE_DOWN
+    gyro_temp.AXIS_X =  (int32_t) gyro_temp_int16.AXIS_X;               /* Casting data to int32_t */
+    gyro_temp.AXIS_Y = -(int32_t) gyro_temp_int16.AXIS_Y;
+    gyro_temp.AXIS_Z = -(int32_t) gyro_temp_int16.AXIS_Z;
+#else
     gyro_temp.AXIS_X = (int32_t) gyro_temp_int16.AXIS_X;                /* Casting data to int32_t */
     gyro_temp.AXIS_Y = (int32_t) gyro_temp_int16.AXIS_Y;
     gyro_temp.AXIS_Z = (int32_t) gyro_temp_int16.AXIS_Z;
+#endif
     // Read data is in mg unit
     if (USE_MAG_SENSOR){
         BSP_MAGNETO_Get_Axes(MAG_handle, &mag_temp_int16);
+#ifdef FCU_UPSIDE_DOWN
+        mag->AXIS_X =  (int32_t) mag_temp_int16.AXIS_X;
+        mag->AXIS_Y = -(int32_t) mag_temp_int16.AXIS_Y;
+        mag->AXIS_Z = -(int32_t) mag_temp_int16.AXIS_Z;
+#else
         mag->AXIS_X = (int32_t) mag_temp_int16.AXIS_X;
         mag->AXIS_Y = (int32_t) mag_temp_int16.AXIS_Y;
         mag->AXIS_Z = (int32_t) mag_temp_int16.AXIS_Z;
+#endif
     }
     else
     {
