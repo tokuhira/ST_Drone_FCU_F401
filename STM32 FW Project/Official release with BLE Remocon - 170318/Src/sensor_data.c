@@ -71,50 +71,50 @@
  */
 void ReadSensorRawData(void *ACC_handle, void *GYR_handle, void *MAG_handle, void *PRE_handle, AxesRaw_TypeDef *acc, AxesRaw_TypeDef *gyro, AxesRaw_TypeDef *mag, float *pre)
 {
-    int32_t t1;
     SensorAxes_t acc_temp_int16, gyro_temp_int16, mag_temp_int16;            /* Data Type int16_t */
-    AxesRaw_TypeDef acc_temp, gyro_temp; 
+    AxesRaw_TypeDef acc_temp, gyro_temp, mag_temp;
     /* Data Type int32_t */
     // Read data is in mg unit
     BSP_ACCELERO_Get_Axes(ACC_handle, &acc_temp_int16);
 #ifdef FCU_UPSIDE_DOWN
     acc_temp.AXIS_X =  (int32_t) acc_temp_int16.AXIS_X;               /* Casting data to int32_t */
     acc_temp.AXIS_Y = -(int32_t) acc_temp_int16.AXIS_Y;
-    acc_temp.AXIS_Z = -(int32_t) acc_temp_int16.AXIS_Z;
+    acc->AXIS_Z     = -(int32_t) acc_temp_int16.AXIS_Z;
 #else
     acc_temp.AXIS_X = (int32_t) acc_temp_int16.AXIS_X;                /* Casting data to int32_t */
     acc_temp.AXIS_Y = (int32_t) acc_temp_int16.AXIS_Y;
-    acc_temp.AXIS_Z = (int32_t) acc_temp_int16.AXIS_Z;
+    acc->AXIS_Z     = (int32_t) acc_temp_int16.AXIS_Z;
 #endif
     // Read data is in mdps unit
     BSP_GYRO_Get_Axes(GYR_handle, &gyro_temp_int16);
 #ifdef FCU_UPSIDE_DOWN
     gyro_temp.AXIS_X =  (int32_t) gyro_temp_int16.AXIS_X;               /* Casting data to int32_t */
     gyro_temp.AXIS_Y = -(int32_t) gyro_temp_int16.AXIS_Y;
-    gyro_temp.AXIS_Z = -(int32_t) gyro_temp_int16.AXIS_Z;
+    gyro->AXIS_Z     = -(int32_t) gyro_temp_int16.AXIS_Z;
 #else
     gyro_temp.AXIS_X = (int32_t) gyro_temp_int16.AXIS_X;                /* Casting data to int32_t */
     gyro_temp.AXIS_Y = (int32_t) gyro_temp_int16.AXIS_Y;
-    gyro_temp.AXIS_Z = (int32_t) gyro_temp_int16.AXIS_Z;
+    gyro->AXIS_Z     = (int32_t) gyro_temp_int16.AXIS_Z;
 #endif
     // Read data is in mg unit
-    if (USE_MAG_SENSOR){
+    if (USE_MAG_SENSOR)
+    {
         BSP_MAGNETO_Get_Axes(MAG_handle, &mag_temp_int16);
 #ifdef FCU_UPSIDE_DOWN
-        mag->AXIS_X =  (int32_t) mag_temp_int16.AXIS_X;
-        mag->AXIS_Y = -(int32_t) mag_temp_int16.AXIS_Y;
-        mag->AXIS_Z = -(int32_t) mag_temp_int16.AXIS_Z;
+        mag_temp.AXIS_X =  (int32_t) mag_temp_int16.AXIS_X;
+        mag_temp.AXIS_Y = -(int32_t) mag_temp_int16.AXIS_Y;
+        mag->AXIS_Z     = -(int32_t) mag_temp_int16.AXIS_Z;
 #else
-        mag->AXIS_X = (int32_t) mag_temp_int16.AXIS_X;
-        mag->AXIS_Y = (int32_t) mag_temp_int16.AXIS_Y;
-        mag->AXIS_Z = (int32_t) mag_temp_int16.AXIS_Z;
+        mag_temp.AXIS_X = (int32_t) mag_temp_int16.AXIS_X;
+        mag_temp.AXIS_Y = (int32_t) mag_temp_int16.AXIS_Y;
+        mag->AXIS_Z     = (int32_t) mag_temp_int16.AXIS_Z;
 #endif
     }
     else
     {
-        mag->AXIS_X = 0;
-        mag->AXIS_Y = 0;
-        mag->AXIS_Z = 0;
+        mag_temp.AXIS_X = 0;
+        mag_temp.AXIS_Y = 0;
+        mag->AXIS_Z     = 0;
     }
     
     if (USE_PRESSURE_SENSOR)
@@ -122,52 +122,51 @@ void ReadSensorRawData(void *ACC_handle, void *GYR_handle, void *MAG_handle, voi
     else
         pre = 0;
     
-    
+    // Options for FWD direction by horizontal rotation
     if (COORDINATE_SYSTEM == 1)
     {
         // convert acc
-        t1 = acc->AXIS_X;
-        acc->AXIS_X = acc->AXIS_Y;
-        acc->AXIS_Y = -t1;
+        acc->AXIS_X =  acc_temp.AXIS_Y;
+        acc->AXIS_Y = -acc_temp.AXIS_X;
         // convert gyro
-        t1 = gyro->AXIS_X;
-        gyro->AXIS_X = gyro->AXIS_Y;
-        gyro->AXIS_Y = -t1;
+        gyro->AXIS_X =  gyro_temp.AXIS_Y;
+        gyro->AXIS_Y = -gyro_temp.AXIS_X;
         // convert mag
-        t1 = mag->AXIS_X;
-        mag->AXIS_X = mag->AXIS_Y;
-        mag->AXIS_Y = -t1;
+        mag->AXIS_X =  mag_temp.AXIS_Y;
+        mag->AXIS_Y = -mag_temp.AXIS_X;
     }
     else if (COORDINATE_SYSTEM == 2)
     {
         // No need to convert in this case
+        acc->AXIS_X = acc_temp.AXIS_X;
+        acc->AXIS_Y = acc_temp.AXIS_Y;
+        gyro->AXIS_X = gyro_temp.AXIS_X;
+        gyro->AXIS_Y = gyro_temp.AXIS_Y;
+        mag->AXIS_X = mag_temp.AXIS_X;
+        mag->AXIS_Y = mag_temp.AXIS_Y;
     }
     else if (COORDINATE_SYSTEM == 3)
     {
-     
-      acc->AXIS_X = -acc_temp.AXIS_Y;
-      acc->AXIS_Y = acc_temp.AXIS_X;
-      acc->AXIS_Z = acc_temp.AXIS_Z;
-      
-      gyro->AXIS_X = -gyro_temp.AXIS_Y;
-      gyro->AXIS_Y = gyro_temp.AXIS_X;
-      gyro->AXIS_Z = gyro_temp.AXIS_Z;
-      
-      // convert mag
-      t1 = mag->AXIS_X;
-      mag->AXIS_X = - mag->AXIS_Y;
-      mag->AXIS_Y = t1;
+        // convert acc
+        acc->AXIS_X = -acc_temp.AXIS_Y;
+        acc->AXIS_Y =  acc_temp.AXIS_X;
+        // convert gyro
+        gyro->AXIS_X = -gyro_temp.AXIS_Y;
+        gyro->AXIS_Y =  gyro_temp.AXIS_X;
+        // convert mag
+        mag->AXIS_X = -mag_temp.AXIS_Y;
+        mag->AXIS_Y =  mag_temp.AXIS_X;
     }
     else if (COORDINATE_SYSTEM == 4)
     {
         // convert acc
-        acc->AXIS_X = - acc->AXIS_X;
-        acc->AXIS_Y = - acc->AXIS_Y;
+        acc->AXIS_X = -acc_temp.AXIS_X;
+        acc->AXIS_Y = -acc_temp.AXIS_Y;
         // convert gyro
-        gyro->AXIS_X = - gyro->AXIS_X;
-        gyro->AXIS_Y = - gyro->AXIS_Y;
+        gyro->AXIS_X = -gyro_temp.AXIS_X;
+        gyro->AXIS_Y = -gyro_temp.AXIS_Y;
         // convert mag
-        mag->AXIS_X = - mag->AXIS_X;
-        mag->AXIS_Y = - mag->AXIS_Y;
+        mag->AXIS_X = -mag_temp.AXIS_X;
+        mag->AXIS_Y = -mag_temp.AXIS_Y;
     }
 }
