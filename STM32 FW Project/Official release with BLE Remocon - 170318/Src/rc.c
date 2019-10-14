@@ -11,7 +11,7 @@
     rc_t[4]. The drfault time step is 0.25us/LSB.
     It also convert the pulse width signal into real control signal stored in
     global variable: gAIL, gELE, gTHR, gRUD (by calling update_rc_data(idx))
-    gAIL, gELE and gRUD are 0 centerred (+/-0.5ms with 0.25us/LSB). gTHE is 0~1ms
+    gAIL, gELE and gRUD are 0 centerred (+/-0.5ms with 0.25us/LSB). gTHR is 0~1ms
     with 0.25us/LSB.
 
     3. HAL_SYSTICK_Callback()
