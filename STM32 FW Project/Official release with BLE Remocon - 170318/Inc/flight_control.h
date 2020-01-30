@@ -116,8 +116,36 @@ void FlightControlPID_innerLoop(EulerAngleTypeDef *euler_rc, Gyro_Rad *gyro_rad,
 void PIDControlInit(P_PI_PIDControlTypeDef *pid);
 void PIDOuterLoopFrameTrans(P_PI_PIDControlTypeDef *pid, EulerAngleTypeDef *euler_ahrs);
 
-
-
+// https://www.cqpub.co.jp/interface/download/2020/3/IF2003T.zip
+// p.87, list 1
+#define RP_RCTRL_FA { \
+ -53032.F,      0.F, -107.592F,        0.F, \
+      0.F, -53032.F,        0.F, -107.592F \
+ }
+#define RP_RCTRL_GA { \
+ 100.F,   0.F, \
+   0.F, 100.F \
+ }
+#define RP_RCTRL_HA { \
+ 100.268F,      0.F, \
+      0.F, 100.268F \
+ }
+#define RP_RCTRL_AOD { \
+ 0.987578F,       0.F, \
+       0.F, 0.987578F \
+ }
+#define RP_RCTRL_BOD { \
+ 4.81981e-007F,           0.F, \
+           0.F, 4.81981e-007F \
+ }
+#define RP_RCTRL_COD { \
+ 1.F, 0.F, \
+ 0.F, 1.F \
+ }
+#define EGX_I_LIMIT  (20.F)
+#define EGY_I_LIMIT  (20.F)
+#define X_S2_LIMIT_O  (10.F)
+#define Y_S2_LIMIT_O  (10.F)
 
 
 #endif
